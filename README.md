@@ -88,11 +88,14 @@ TechNews is a comprehensive developer blog and tech article publishing platform 
 
 
 ## QUIK Start 
+
 # Author login Creadential and dashboard view 
+
 Name: Nishad Shaikh
 Email: shaikh.nishad2005@gmail.com
 password :12345678
 Role: author
+
 ┌─────────────────────────────────────────────────────────────┐
 │                    AUTHOR DASHBOARD                        │
 ├─────────────────────────────────────────────────────────────┤
@@ -124,6 +127,7 @@ Role: author
 └─────────────────────────────────────────────────────────────┘
 
 # Reader Role Login Credential and dashboard view 
+
 Name: Nishad Shaikh
 Email: nishadshaikh@gmail.com
 password :12345678
