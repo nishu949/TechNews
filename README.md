@@ -485,3 +485,10 @@ technews/
 ├── composer.json
 ├── package.json
 └── README.md
+
+👨‍💻 Author
+
+Nishad Shaikh 
+
+GitHub:nishu949
+LinkedIn:Nishad Shaikh
