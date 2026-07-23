@@ -36,6 +36,7 @@ Newsletter: Subscribe for latest updates
 ## 📋 Table of Contents
 
 - [📖 About TechNews](#-about-technews)
+- [Project Image Overview](#-project-image-overview)
 - [✨ Features](#-features)
 - [🛠️ Technology Stack](#️-technology-stack)
 - [📊 Database Schema](#-database-schema)
@@ -83,7 +84,7 @@ TechNews is a comprehensive developer blog and tech article publishing platform 
 
 ![Create Article ](Screenshot/CreateArticle.png)
 
-![View Article ](Screenshot/ViewArticle.png)
+![View Article ](Screenshot/ViewArticle%20.png)
 
 
 ## QUIK Start 
