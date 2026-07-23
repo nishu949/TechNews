@@ -72,6 +72,20 @@ TechNews is a comprehensive developer blog and tech article publishing platform 
 - **For Community:** Foster a collaborative environment for knowledge sharing and technical discussions
 
 ---
+
+### Project Image Overview 
+
+![Author Dashboard ](Screenshot/AuthorDashBoard.png)
+
+![Category Page ](Screenshot/CategoryPage.png)
+
+![Comment Section  ](Screenshot/CommentSection.png)
+
+![Create Article ](Screenshot/CreateArticle.png)
+
+![View Article ](Screenshot/ViewArticle.png)
+
+
 ## QUIK Start 
 # Author login Creadential and dashboard view 
 Name: Nishad Shaikh
