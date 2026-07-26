@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 use App\Mail\NewCommentNotification;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\SetupController;
+use App\Http\Controllers\MigrationController;
 // ======================== PUBLIC ROUTES ========================
 
 // Homepage
@@ -124,11 +126,13 @@ Route::get('/debug', function () {
     ]);
 });
 
-use App\Http\Controllers\MigrationController;
+
 
 // ======================== DEPLOYMENT SETUP ROUTES ========================
 // REMOVE THESE ROUTES AFTER DEPLOYMENT!
-
+Route::get('/setup', [SetupController::class, 'index']);
+Route::get('/setup-migrate', [SetupController::class, 'runMigrations']);
+Route::get('/setup-clear', [SetupController::class, 'clearCache']);
 Route::get('/debug', [MigrationController::class, 'debug']);
 Route::get('/fix-permissions', [MigrationController::class, 'fixPermissions']);
 Route::get('/run-migrations', [MigrationController::class, 'runMigrations']);
