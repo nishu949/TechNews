@@ -33,6 +33,10 @@ class ProfileController extends Controller
             $user->role = $request->role;
             $user->save();
             
+            // ✅ FORCE REFRESH THE SESSION USER
+            Auth::setUser($user);
+            // OR use: $request->session()->put('user', $user);
+            
             // Redirect to dashboard with success message
             return Redirect::route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
         }
