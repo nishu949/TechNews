@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-
+Route::get('/setup-fix', [SetupController::class, 'fixDatabase']);
 
 Route::get('/test-email', function () {
     // Get a comment

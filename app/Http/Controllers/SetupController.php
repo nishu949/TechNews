@@ -20,23 +20,7 @@ class SetupController extends Controller
             $output['config_clear'] = '❌ ' . $e->getMessage();
         }
         
-        // 2. Clear view cache
-        try {
-            Artisan::call('view:clear');
-            $output['view_clear'] = '✅ View cache cleared';
-        } catch (\Exception $e) {
-            $output['view_clear'] = '❌ ' . $e->getMessage();
-        }
-        
-        // 3. Clear route cache
-        try {
-            Artisan::call('route:clear');
-            $output['route_clear'] = '✅ Route cache cleared';
-        } catch (\Exception $e) {
-            $output['route_clear'] = '❌ ' . $e->getMessage();
-        }
-        
-        // 4. Check database connection
+        // 2. Check database connection
         try {
             DB::connection()->getPdo();
             $output['db_status'] = '✅ Connected!';
@@ -46,24 +30,56 @@ class SetupController extends Controller
             $output['db_error'] = $e->getMessage();
         }
         
-        // 5. Show environment
-        $output['env'] = [
-            'APP_ENV' => env('APP_ENV'),
-            'DB_CONNECTION' => env('DB_CONNECTION'),
-            'APP_DEBUG' => env('APP_DEBUG'),
-        ];
+        // 3. List tables
+        try {
+            $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+            $output['tables'] = $tables;
+        } catch (\Exception $e) {
+            $output['tables'] = [];
+        }
         
         return response()->json($output);
     }
     
     public function runMigrations()
     {
+        $results = [];
+        
         try {
+            // 1. Clear cache first
+            Artisan::call('config:clear');
+            $results['config_clear'] = '✅ Done';
+            
+            // 2. Run migrations
             Artisan::call('migrate --force');
+            $results['migrate'] = Artisan::output();
+            
+            // 3. Get tables after migration
+            $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+            $results['tables'] = $tables;
             
             return response()->json([
                 'success' => true,
                 'message' => 'Migrations ran successfully!',
+                'results' => $results
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
+    
+    public function seedDatabase()
+    {
+        try {
+            Artisan::call('db:seed --force');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Database seeded successfully!',
                 'output' => Artisan::output()
             ]);
         } catch (\Exception $e) {
@@ -88,6 +104,37 @@ class SetupController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function fixDatabase()
+    {
+        $results = [];
+        
+        try {
+            // 1. Drop all tables
+            Artisan::call('db:wipe --force');
+            $results['wipe'] = '✅ Database wiped';
+            
+            // 2. Run migrations
+            Artisan::call('migrate --force');
+            $results['migrate'] = Artisan::output();
+            
+            // 3. Get tables
+            $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+            $results['tables'] = $tables;
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Database fixed successfully!',
+                'results' => $results
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
