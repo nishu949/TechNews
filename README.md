@@ -69,7 +69,7 @@ Here are some key screenshots of the TechNews platform:
 ## ✨ Features
 
 ### 🎨 Frontend Features
-
+```
 | Feature | Description |
 |---------|-------------|
 | **HTML5 Semantic Layout** | Uses `article`, `section`, `aside`, `time` tags for SEO optimization |
@@ -78,9 +78,9 @@ Here are some key screenshots of the TechNews platform:
 | **Bootstrap 5 Grid** | Responsive article listing with 2-column grid layout |
 | **Dark Mode Ready** | Code blocks with syntax highlighting |
 | **Mobile-First** | Optimized reading experience on mobile devices |
-
+```
 ### ⚙️ Backend Features
-
+```
 | Feature | Description |
 |---------|-------------|
 | **Authentication** | Secure login/register with role-based access (Reader/Author) |
@@ -92,7 +92,7 @@ Here are some key screenshots of the TechNews platform:
 | **Email Notifications** | Authors receive email notifications for new comments |
 | **Views Tracking** | Automatic article view counter |
 | **Reading Time** | Auto-calculated reading time for each article |
-
+```
 ### 🔒 Security Features
 
 - CSRF (Cross-Site Request Forgery) Protection (Laravel's built-in)
@@ -131,6 +131,7 @@ Fonts: Google Fonts (Inter, JetBrains Mono)
 Icons: Font Awesome 6
 Build Tool: Vite
 ### Database Schema 
+```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              DATABASE SCHEMA                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -166,7 +167,9 @@ Build Tool: Vite
 │  └─────────────┘                                                         │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
+```
 ### MVC architecture 
+```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           MVC ARCHITECTURE                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -184,15 +187,16 @@ Build Tool: Vite
 │   └───────────┘    └─────────────┘    └─────────────┘                    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
-
+```
 ### Request Flow
-
+```
 1. User Request → 2. Routes → 3. Middleware → 4. Controller → 5. Model
                                                                     │
 7. Response ← 6. View ←────────────────────────────────────────────┘
-
+```
 
 ### Article Creation Flow 
+```
 User (Author) → Login → Click "Write" → Fill Form
     ↓
 Submit Article → Validate Input → Save to Database
@@ -202,6 +206,8 @@ Markdown → CommonMark → HTML → Display on Site
 Tag Assignment → Category Assignment → Publish
     ↓
 Article visible to Readers ✅
+
+```
 
 ### QUICK START 
 
@@ -320,7 +326,7 @@ QUEUE_CONNECTION=database
 
 
 ## Project Structure 
-
+```
 technews/
 ├── app/
 │   ├── Http/
@@ -393,8 +399,8 @@ technews/
 ├── composer.json
 ├── package.json
 └── README.md
-
-
+```
+```
 👨‍💻 Authortechnews/
 ├── app/
 │   ├── Http/
@@ -467,7 +473,7 @@ technews/
 ├── composer.json
 ├── package.json
 └── README.md
-
+```
 Nishad Shaikh 
 
 GitHub:nishu949
