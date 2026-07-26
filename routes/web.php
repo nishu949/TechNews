@@ -174,5 +174,53 @@ Route::get('/fix-role-now', function () {
         ], 500);
     }
 });
+
+// ======================== DEBUG SESSION ========================
+Route::get('/debug-session', function () {
+    if (!auth()->check()) {
+        return '❌ Please login first. <a href="/login">Login</a>';
+    }
+    
+    $user = auth()->user();
+    $user->refresh();
+    
+    return response()->json([
+        'session_user_id' => auth()->id(),
+        'user_from_database' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_author' => $user->isAuthor(),
+        ],
+        'session_has_role' => session()->has('user_role') ? 'Yes' : 'No',
+        'message' => 'Check if your role shows as "author" above'
+    ]);
+});
+
+// ======================== FORCE REFRESH USER ========================
+Route::get('/force-refresh', function () {
+    if (!auth()->check()) {
+        return '❌ Please login first. <a href="/login">Login</a>';
+    }
+    
+    $user = auth()->user();
+    $user->refresh();
+    
+    // Also clear session cache
+    session()->forget('user_role');
+    
+    return response()->json([
+        'message' => '✅ User refreshed successfully!',
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_author' => $user->isAuthor(),
+        ],
+        'next_step' => 'Try creating an article now: /articles/create'
+    ]);
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';

@@ -61,28 +61,55 @@ class ArticleController extends Controller
     /**
      * Show Create Article Form
      */
-    public function create()
-    {
-        if (!auth()->user()->isAuthor()) {
-            abort(403, 'Only authors can create articles.');
-        }
-
-        $categories = Category::all();
-        $tags = Tag::all();
-
-        return view('articles.create', compact('categories', 'tags'));
+/**
+ * Show Create Article Form
+ */
+public function create()
+{
+    // Check if user is logged in
+    if (!auth()->check()) {
+        return redirect()->route('login')->with('error', 'Please login to write articles.');
     }
 
-    /**
-     * Store New Article
-     */
-  /**
+    // FORCE REFRESH USER FROM DATABASE
+    $user = auth()->user();
+    $user->refresh(); // This reloads the user from database
+
+    // Check if user is author
+    if (!$user->isAuthor()) {
+        // Log the issue for debugging
+        \Log::error('User is not an author', [
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'is_author' => $user->isAuthor()
+        ]);
+
+        abort(403, 'Only authors can create articles. Your role is: ' . $user->role);
+    }
+
+    $categories = Category::all();
+    $tags = Tag::all();
+
+    return view('articles.create', compact('categories', 'tags'));
+}
+
+/**
  * Store New Article
  */
 public function store(Request $request)
 {
-    if (!auth()->user()->isAuthor()) {
-        abort(403, 'Only authors can create articles.');
+    // Check if user is logged in
+    if (!auth()->check()) {
+        return redirect()->route('login')->with('error', 'Please login to publish articles.');
+    }
+
+    // FORCE REFRESH USER FROM DATABASE
+    $user = auth()->user();
+    $user->refresh();
+
+    // Check if user is author
+    if (!$user->isAuthor()) {
+        abort(403, 'Only authors can create articles. Your role is: ' . $user->role);
     }
 
     $validated = $request->validate([
@@ -118,7 +145,6 @@ public function store(Request $request)
         $article->tags()->sync($request->tags);
     }
 
-    // FIX: Use $article->slug instead of $article
     return redirect()
         ->route('articles.show', $article->slug)
         ->with('success', 'Article published successfully!');
