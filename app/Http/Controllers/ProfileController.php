@@ -28,13 +28,17 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         
-        // Fill basic info
-        $user->fill($request->validated());
-
-        // Handle role update
+        // Handle role update FIRST (before other updates)
         if ($request->has('role') && in_array($request->role, ['reader', 'author'])) {
             $user->role = $request->role;
+            $user->save();
+            
+            // Redirect to dashboard with success message
+            return Redirect::route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
         }
+
+        // If no role update, do normal profile update
+        $user->fill($request->validated());
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

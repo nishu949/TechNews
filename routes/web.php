@@ -109,5 +109,70 @@ Route::get('/become-author', function () {
     
     return redirect()->route('dashboard')->with('success', 'You are now an Author! You can start writing articles.');
 });
+
+// ======================== DEBUG ROUTES ========================
+Route::get('/debug-role', function () {
+    if (!auth()->check()) {
+        return '❌ Please login first. <a href="/login">Login</a>';
+    }
+    
+    $user = auth()->user();
+    
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => $user->role,
+        'is_author' => $user->isAuthor(),
+        'is_reader' => $user->isReader(),
+    ]);
+});
+
+// ======================== FORCE BECOME AUTHOR ========================
+Route::get('/force-author', function () {
+    if (!auth()->check()) {
+        return '❌ Please login first. <a href="/login">Login</a>';
+    }
+    
+    $user = auth()->user();
+    $user->role = 'author';
+    $user->save();
+    
+    return response()->json([
+        'message' => '✅ User is now an Author!',
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => $user->role,
+        'is_author' => $user->isAuthor(),
+    ]);
+});
+
+// ======================== FIX ROLE DIRECTLY ========================
+Route::get('/fix-role-now', function () {
+    if (!auth()->check()) {
+        return 'Please login first. <a href="/login">Login</a>';
+    }
+    
+    $user = auth()->user();
+    
+    try {
+        // Update role directly using DB
+        DB::table('users')->where('id', $user->id)->update(['role' => 'author']);
+        
+        // Refresh user
+        $user = auth()->user();
+        
+        return response()->json([
+            'message' => '✅ Role fixed!',
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
