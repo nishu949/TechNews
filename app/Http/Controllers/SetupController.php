@@ -34,8 +34,10 @@ class SetupController extends Controller
         try {
             $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
             $output['tables'] = $tables;
+            $output['table_count'] = count($tables);
         } catch (\Exception $e) {
             $output['tables'] = [];
+            $output['table_count'] = 0;
         }
         
         return response()->json($output);
@@ -43,24 +45,92 @@ class SetupController extends Controller
     
     public function runMigrations()
     {
-        $results = [];
-        
         try {
-            // 1. Clear cache first
-            Artisan::call('config:clear');
-            $results['config_clear'] = '✅ Done';
+            Artisan::call('migrate:fresh --force');
+            $output = Artisan::output();
             
-            // 2. Run migrations
-            Artisan::call('migrate --force');
-            $results['migrate'] = Artisan::output();
-            
-            // 3. Get tables after migration
             $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
-            $results['tables'] = $tables;
             
             return response()->json([
                 'success' => true,
                 'message' => 'Migrations ran successfully!',
+                'output' => $output,
+                'tables' => $tables,
+                'table_count' => count($tables)
+            ]);
+        } catch (\Exception $e) {
+            // Try fallback
+            try {
+                Artisan::call('migrate --force');
+                $output = Artisan::output();
+                
+                $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Migrations ran successfully (fallback)!',
+                    'output' => $output,
+                    'tables' => $tables,
+                    'table_count' => count($tables)
+                ]);
+            } catch (\Exception $e2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e2->getMessage(),
+                    'trace' => $e2->getTraceAsString()
+                ], 500);
+            }
+        }
+    }
+    
+    public function createTables()
+    {
+        $results = [];
+        
+        try {
+            // Get migration files in correct order
+            $migrationFiles = [
+                '0001_01_01_000000_create_users_table.php',
+                '2026_07_17_153438_create_categories_table.php',
+                '2026_07_17_153440_create_articles_table.php',
+                '2026_07_17_153439_create_tags_table.php',
+                '2026_07_17_153442_create_article_tag_table.php',
+                '2026_07_17_153441_create_comments_table.php',
+                '2026_07_21_145042_add_role_to_users_table.php',
+                '2026_07_23_123930_add_views_and_reading_time_to_articles_table.php',
+                '2026_07_23_125139_add_parent_id_and_status_to_comments_table.php'
+            ];
+            
+            $results['migrations'] = $migrationFiles;
+            
+            foreach ($migrationFiles as $file) {
+                // Check if file exists
+                $fullPath = database_path('migrations/' . $file);
+                if (file_exists($fullPath)) {
+                    try {
+                        Artisan::call('migrate --path=database/migrations/' . $file . ' --force');
+                        $results['success'][] = $file;
+                    } catch (\Exception $e) {
+                        $results['failed'][] = $file . ': ' . $e->getMessage();
+                    }
+                } else {
+                    $results['not_found'][] = $file;
+                }
+            }
+            
+            // Get tables after migration
+            try {
+                $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+                $results['tables'] = $tables;
+                $results['table_count'] = count($tables);
+            } catch (\Exception $e) {
+                $results['tables'] = [];
+                $results['table_count'] = 0;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Individual migrations executed!',
                 'results' => $results
             ]);
         } catch (\Exception $e) {
@@ -110,25 +180,32 @@ class SetupController extends Controller
     
     public function fixDatabase()
     {
-        $results = [];
-        
         try {
-            // 1. Drop all tables
-            Artisan::call('db:wipe --force');
-            $results['wipe'] = '✅ Database wiped';
-            
-            // 2. Run migrations
-            Artisan::call('migrate --force');
-            $results['migrate'] = Artisan::output();
-            
-            // 3. Get tables
+            // Drop all tables manually
             $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
-            $results['tables'] = $tables;
+            
+            foreach ($tables as $table) {
+                if ($table !== 'migrations') {
+                    DB::statement('DROP TABLE IF EXISTS "' . $table . '" CASCADE;');
+                }
+            }
+            
+            // Drop migrations table
+            DB::statement('DROP TABLE IF EXISTS migrations CASCADE;');
+            
+            // Run migrations
+            Artisan::call('migrate --force');
+            $output = Artisan::output();
+            
+            $newTables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
             
             return response()->json([
                 'success' => true,
-                'message' => 'Database fixed successfully!',
-                'results' => $results
+                'message' => 'Database fixed!',
+                'dropped_tables' => $tables,
+                'new_tables' => $newTables,
+                'table_count' => count($newTables),
+                'output' => $output
             ]);
         } catch (\Exception $e) {
             return response()->json([
