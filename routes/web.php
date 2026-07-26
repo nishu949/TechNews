@@ -112,5 +112,16 @@ Route::get('/seed-database', function () {
         return "❌ Error: " . $e->getMessage();
     }
 });
+
+// ======================== DEBUG ROUTE ========================
+Route::get('/debug', function () {
+    return response()->json([
+        'app_env' => env('APP_ENV'),
+        'app_debug' => env('APP_DEBUG'),
+        'db_connection' => env('DB_CONNECTION'),
+        'php_version' => phpversion(),
+        'laravel_version' => app()->version(),
+    ]);
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
