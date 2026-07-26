@@ -84,6 +84,24 @@ Route::get('/test-email', function () {
     }
 })->middleware('auth');
 
+<?php
+
+// ======================== TEST ROUTE (TOP OF FILE) ========================
+Route::get('/test', function () {
+    return "✅ App is working! PHP version: " . phpversion();
+});
+
+Route::get('/test-db', function () {
+    try {
+        DB::connection()->getPdo();
+        return "✅ Database connected! Database: " . DB::connection()->getDatabaseName();
+    } catch (\Exception $e) {
+        return "❌ Database error: " . $e->getMessage();
+    }
+});
+
+// Then all your other routes...
+
 // ======================== DEPLOYMENT SETUP ROUTES ========================
 // REMOVE THESE ROUTES AFTER DEPLOYMENT!
 
