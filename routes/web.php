@@ -222,5 +222,22 @@ Route::get('/force-refresh', function () {
         'next_step' => 'Try creating an article now: /articles/create'
     ]);
 });
+// Add this route for testing
+Route::get('/logout-and-login', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    
+    $user = auth()->user();
+    $user->role = 'author';
+    $user->save();
+    
+    Auth::logout();
+    
+    // Re-login the user
+    Auth::login($user);
+    
+    return redirect()->route('dashboard')->with('success', 'You are now an Author!');
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
