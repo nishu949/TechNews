@@ -27,16 +27,24 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
+# Create bootstrap/cache directory if it doesn't exist
+RUN mkdir -p /var/www/html/bootstrap/cache
+
+# Set permissions BEFORE installing dependencies
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
+
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
 # Install Node dependencies and build assets
 RUN npm install && npm run build
 
-# Set permissions
+# Set permissions again after build
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Expose port 10000
 EXPOSE 10000
