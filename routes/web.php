@@ -123,5 +123,15 @@ Route::get('/debug', function () {
         'laravel_version' => app()->version(),
     ]);
 });
+
+use App\Http\Controllers\MigrationController;
+
+// ======================== DEPLOYMENT SETUP ROUTES ========================
+// REMOVE THESE ROUTES AFTER DEPLOYMENT!
+
+Route::get('/debug', [MigrationController::class, 'debug']);
+Route::get('/fix-permissions', [MigrationController::class, 'fixPermissions']);
+Route::get('/run-migrations', [MigrationController::class, 'runMigrations']);
+Route::get('/seed-database', [MigrationController::class, 'seedDatabase']);
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
