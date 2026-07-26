@@ -98,6 +98,16 @@ Route::get('/setup-create', [SetupController::class, 'createTables']);
 Route::get('/setup-clear', [SetupController::class, 'clearCache']);
 Route::get('/setup-fix', [SetupController::class, 'fixDatabase']);
 Route::get('/seed-database', [SetupController::class, 'seedDatabase']);
-
+Route::get('/become-author', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    
+    $user = auth()->user();
+    $user->role = 'author';
+    $user->save();
+    
+    return redirect()->route('dashboard')->with('success', 'You are now an Author! You can start writing articles.');
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
