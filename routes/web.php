@@ -6,35 +6,33 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MigrationController;
 use Illuminate\Support\Facades\Route;
 use App\Mail\NewCommentNotification;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Artisan;
+
 // ======================== PUBLIC ROUTES ========================
 
 // Homepage
 Route::get('/', [ArticleController::class, 'index'])->name('home');
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 
-// ======================== ARTICLE ROUTES (Order Matters!) ========================
+// ======================== ARTICLE ROUTES ========================
 
-// 1. CREATE - Must come BEFORE the {slug} route
 Route::middleware('auth')->group(function () {
     Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');
 });
 
-// 2. SEARCH
 Route::get('/articles/search', [ArticleController::class, 'search'])->name('articles.search');
 
-// 3. STORE (POST)
 Route::middleware('auth')->group(function () {
     Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
 });
 
-// 4. SHOW - The {slug} route MUST come AFTER create and search
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
 
-// 5. EDIT - Must come BEFORE the {slug} route as well
 Route::middleware('auth')->group(function () {
     Route::get('/articles/{article:slug}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
     Route::put('/articles/{article:slug}', [ArticleController::class, 'update'])->name('articles.update');
@@ -67,11 +65,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
-
+// ======================== TEST EMAIL ROUTE ========================
 
 Route::get('/test-email', function () {
-    // Get a comment
     $comment = Comment::with(['user', 'article'])->first();
     
     if (!$comment) {
@@ -88,44 +84,6 @@ Route::get('/test-email', function () {
     }
 })->middleware('auth');
 
-
-// ======================== TEMPORARY MIGRATION ROUTE ========================
-// REMOVE THIS ROUTE AFTER RUNNING MIGRATIONS!
-use Illuminate\Support\Facades\Artisan;
-
-Route::get('/run-migrations', function () {
-    try {
-        Artisan::call('migrate --force');
-        $output = Artisan::output();
-        return "✅ Migrations run successfully!<br><br><pre>" . $output . "</pre>";
-    } catch (\Exception $e) {
-        return "❌ Error: " . $e->getMessage();
-    }
-});
-
-Route::get('/seed-database', function () {
-    try {
-        Artisan::call('db:seed --force');
-        $output = Artisan::output();
-        return "✅ Database seeded successfully!<br><br><pre>" . $output . "</pre>";
-    } catch (\Exception $e) {
-        return "❌ Error: " . $e->getMessage();
-    }
-});
-
-// ======================== DEBUG ROUTE ========================
-Route::get('/debug', function () {
-    return response()->json([
-        'app_env' => env('APP_ENV'),
-        'app_debug' => env('APP_DEBUG'),
-        'db_connection' => env('DB_CONNECTION'),
-        'php_version' => phpversion(),
-        'laravel_version' => app()->version(),
-    ]);
-});
-
-use App\Http\Controllers\MigrationController;
-
 // ======================== DEPLOYMENT SETUP ROUTES ========================
 // REMOVE THESE ROUTES AFTER DEPLOYMENT!
 
@@ -133,5 +91,6 @@ Route::get('/debug', [MigrationController::class, 'debug']);
 Route::get('/fix-permissions', [MigrationController::class, 'fixPermissions']);
 Route::get('/run-migrations', [MigrationController::class, 'runMigrations']);
 Route::get('/seed-database', [MigrationController::class, 'seedDatabase']);
+
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
