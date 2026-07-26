@@ -88,5 +88,29 @@ Route::get('/test-email', function () {
     }
 })->middleware('auth');
 
+
+// ======================== TEMPORARY MIGRATION ROUTE ========================
+// REMOVE THIS ROUTE AFTER RUNNING MIGRATIONS!
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/run-migrations', function () {
+    try {
+        Artisan::call('migrate --force');
+        $output = Artisan::output();
+        return "✅ Migrations run successfully!<br><br><pre>" . $output . "</pre>";
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage();
+    }
+});
+
+Route::get('/seed-database', function () {
+    try {
+        Artisan::call('db:seed --force');
+        $output = Artisan::output();
+        return "✅ Database seeded successfully!<br><br><pre>" . $output . "</pre>";
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage();
+    }
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';
