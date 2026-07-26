@@ -27,10 +27,10 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
-# Create bootstrap/cache directory if it doesn't exist
+# Create bootstrap/cache directory
 RUN mkdir -p /var/www/html/bootstrap/cache
 
-# Set permissions BEFORE installing dependencies
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
