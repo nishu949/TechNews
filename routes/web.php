@@ -239,5 +239,52 @@ Route::get('/logout-and-login', function () {
     
     return redirect()->route('dashboard')->with('success', 'You are now an Author!');
 });
+// ======================== BECOME AUTHOR (DIRECT URL) ========================
+Route::middleware('auth')->group(function () {
+    Route::get('/become-author', function () {
+        $user = auth()->user();
+        
+        // Update role in database
+        $user->role = 'author';
+        $user->save();
+        
+        // Force logout and login again to refresh session
+        Auth::logout();
+        Auth::login($user);
+        
+        return redirect()->route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
+    });
+});
+
+// ======================== CHECK ROLE ========================
+Route::get('/check-role', function () {
+    if (!auth()->check()) {
+        return response()->json(['error' => 'Please login first.'], 401);
+    }
+    
+    $user = auth()->user();
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => $user->role,
+        'is_author' => $user->isAuthor(),
+        'is_reader' => $user->isReader(),
+    ]);
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/become-author', function () {
+        $user = auth()->user();
+        $user->role = 'author';
+        $user->save();
+        
+        // Force logout and login again to refresh session
+        Auth::logout();
+        Auth::login($user);
+        
+        return redirect()->route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
+    })->name('become.author'); // ← ADD THIS NAME
+});
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';

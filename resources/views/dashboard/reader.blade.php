@@ -63,15 +63,21 @@
                 <p class="text-muted small mb-3">
                     Become an author and start publishing your own articles on TechNews.
                 </p>
-                <!-- IMPORTANT: This form sends a POST request to update the role -->
-                <form action="{{ route('profile.update') }}" method="POST">
+                
+                <!-- Option 1: Form (POST method) -->
+                <form action="{{ route('profile.update') }}" method="POST" class="d-inline">
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="role" value="author">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary me-2">
                         <i class="fas fa-user-edit me-2"></i>Switch to Author
                     </button>
                 </form>
+
+                <!-- Option 2: Direct Link (GET method) - Backup -->
+                <a href="{{ route('become.author') }}" class="btn btn-success">
+                    <i class="fas fa-arrow-right me-2"></i>Become Author (Direct)
+                </a>
             </div>
         </div>
     </div>
