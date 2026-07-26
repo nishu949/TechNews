@@ -1,4 +1,4 @@
-﻿FROM php:8.3-fpm
+﻿FROM php:8.3-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,10 +10,9 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     nodejs \
-    npm
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
@@ -22,32 +21,31 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /app
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Copy all files
+COPY . /app
 
-# Create bootstrap/cache directory
-RUN mkdir -p /var/www/html/bootstrap/cache
+# Create storage and bootstrap/cache directories
+RUN mkdir -p /app/storage /app/bootstrap/cache
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+RUN chmod -R 777 /app/storage /app/bootstrap/cache
 
 # Install dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Run post-install scripts
+RUN composer run-script post-autoload-dump --no-interaction
 
 # Install Node dependencies and build assets
 RUN npm install && npm run build
 
-# Set permissions again after build
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+# Set final permissions
+RUN chmod -R 777 /app/storage /app/bootstrap/cache
 
 # Expose port 10000
 EXPOSE 10000
 
-# Start PHP-FPM
+# Start command
 CMD php artisan serve --host=0.0.0.0 --port=10000
