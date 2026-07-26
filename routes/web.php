@@ -12,6 +12,8 @@ use App\Mail\NewCommentNotification;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 // ======================== PUBLIC ROUTES ========================
 
@@ -90,25 +92,37 @@ Route::get('/test-email', function () {
 })->middleware('auth');
 
 // ======================== SETUP ROUTES (FOR DEPLOYMENT) ========================
-// REMOVE THESE ROUTES AFTER DEPLOYMENT!
-
 Route::get('/setup', [SetupController::class, 'index']);
 Route::get('/setup-migrate', [SetupController::class, 'runMigrations']);
 Route::get('/setup-create', [SetupController::class, 'createTables']);
 Route::get('/setup-clear', [SetupController::class, 'clearCache']);
 Route::get('/setup-fix', [SetupController::class, 'fixDatabase']);
 Route::get('/seed-database', [SetupController::class, 'seedDatabase']);
-Route::get('/become-author', function () {
-    if (!auth()->check()) {
-        return redirect()->route('login');
-    }
-    
+
+// ======================== SWITCH TO AUTHOR - FRONTEND BUTTON ========================
+Route::middleware('auth')->post('/switch-to-author', function () {
     $user = auth()->user();
     $user->role = 'author';
     $user->save();
     
-    return redirect()->route('dashboard')->with('success', 'You are now an Author! You can start writing articles.');
-});
+    // Force logout and login to refresh session
+    Auth::logout();
+    Auth::login($user);
+    
+    return redirect()->route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
+})->name('switch.to.author');
+
+// ======================== BECOME AUTHOR - DIRECT URL ========================
+Route::middleware('auth')->get('/become-author', function () {
+    $user = auth()->user();
+    $user->role = 'author';
+    $user->save();
+    
+    Auth::logout();
+    Auth::login($user);
+    
+    return redirect()->route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
+})->name('become.author');
 
 // ======================== DEBUG ROUTES ========================
 Route::get('/debug-role', function () {
@@ -128,7 +142,6 @@ Route::get('/debug-role', function () {
     ]);
 });
 
-// ======================== FORCE BECOME AUTHOR ========================
 Route::get('/force-author', function () {
     if (!auth()->check()) {
         return '❌ Please login first. <a href="/login">Login</a>';
@@ -147,116 +160,6 @@ Route::get('/force-author', function () {
     ]);
 });
 
-// ======================== FIX ROLE DIRECTLY ========================
-Route::get('/fix-role-now', function () {
-    if (!auth()->check()) {
-        return 'Please login first. <a href="/login">Login</a>';
-    }
-    
-    $user = auth()->user();
-    
-    try {
-        // Update role directly using DB
-        DB::table('users')->where('id', $user->id)->update(['role' => 'author']);
-        
-        // Refresh user
-        $user = auth()->user();
-        
-        return response()->json([
-            'message' => '✅ Role fixed!',
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
-});
-
-// ======================== DEBUG SESSION ========================
-Route::get('/debug-session', function () {
-    if (!auth()->check()) {
-        return '❌ Please login first. <a href="/login">Login</a>';
-    }
-    
-    $user = auth()->user();
-    $user->refresh();
-    
-    return response()->json([
-        'session_user_id' => auth()->id(),
-        'user_from_database' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'is_author' => $user->isAuthor(),
-        ],
-        'session_has_role' => session()->has('user_role') ? 'Yes' : 'No',
-        'message' => 'Check if your role shows as "author" above'
-    ]);
-});
-
-// ======================== FORCE REFRESH USER ========================
-Route::get('/force-refresh', function () {
-    if (!auth()->check()) {
-        return '❌ Please login first. <a href="/login">Login</a>';
-    }
-    
-    $user = auth()->user();
-    $user->refresh();
-    
-    // Also clear session cache
-    session()->forget('user_role');
-    
-    return response()->json([
-        'message' => '✅ User refreshed successfully!',
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'is_author' => $user->isAuthor(),
-        ],
-        'next_step' => 'Try creating an article now: /articles/create'
-    ]);
-});
-// Add this route for testing
-Route::get('/logout-and-login', function () {
-    if (!auth()->check()) {
-        return redirect()->route('login');
-    }
-    
-    $user = auth()->user();
-    $user->role = 'author';
-    $user->save();
-    
-    Auth::logout();
-    
-    // Re-login the user
-    Auth::login($user);
-    
-    return redirect()->route('dashboard')->with('success', 'You are now an Author!');
-});
-// ======================== BECOME AUTHOR (DIRECT URL) ========================
-Route::middleware('auth')->group(function () {
-    Route::get('/become-author', function () {
-        $user = auth()->user();
-        
-        // Update role in database
-        $user->role = 'author';
-        $user->save();
-        
-        // Force logout and login again to refresh session
-        Auth::logout();
-        Auth::login($user);
-        
-        return redirect()->route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
-    });
-});
-
-// ======================== CHECK ROLE ========================
 Route::get('/check-role', function () {
     if (!auth()->check()) {
         return response()->json(['error' => 'Please login first.'], 401);
@@ -273,18 +176,52 @@ Route::get('/check-role', function () {
     ]);
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/become-author', function () {
-        $user = auth()->user();
-        $user->role = 'author';
-        $user->save();
+Route::get('/force-refresh', function () {
+    if (!auth()->check()) {
+        return '❌ Please login first. <a href="/login">Login</a>';
+    }
+    
+    $user = auth()->user();
+    $user->refresh();
+    
+    session()->forget('user_role');
+    
+    return response()->json([
+        'message' => '✅ User refreshed successfully!',
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_author' => $user->isAuthor(),
+        ],
+    ]);
+});
+// ======================== FIX STORAGE LINK ========================
+Route::get('/storage-link', function () {
+    try {
+        Artisan::call('storage:link');
+        return '✅ Storage link created successfully! <a href="/">Go Home</a>';
+    } catch (\Exception $e) {
+        return '❌ Error: ' . $e->getMessage();
+    }
+});
+
+// ======================== FIX STORAGE LINK ========================
+Route::get('/storage-link', function () {
+    try {
+        // Check if storage link already exists
+        if (file_exists(public_path('storage'))) {
+            return '✅ Storage link already exists!';
+        }
         
-        // Force logout and login again to refresh session
-        Auth::logout();
-        Auth::login($user);
+        // Create storage link
+        Artisan::call('storage:link');
         
-        return redirect()->route('dashboard')->with('success', '🎉 Congratulations! You are now an Author! Start writing your first article!');
-    })->name('become.author'); // ← ADD THIS NAME
+        return '✅ Storage link created successfully! <a href="/">Go Home</a>';
+    } catch (\Exception $e) {
+        return '❌ Error: ' . $e->getMessage();
+    }
 });
 // Include Breeze Auth routes
 require __DIR__.'/auth.php';

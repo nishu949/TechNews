@@ -64,20 +64,18 @@
                     Become an author and start publishing your own articles on TechNews.
                 </p>
                 
-                <!-- Option 1: Form (POST method) -->
-                <form action="{{ route('profile.update') }}" method="POST" class="d-inline">
+                <!-- ✅ This form uses the POST route -->
+                <form action="{{ route('switch.to.author') }}" method="POST">
                     @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="role" value="author">
-                    <button type="submit" class="btn btn-primary me-2">
+                    <button type="submit" class="btn btn-primary btn-lg px-4">
                         <i class="fas fa-user-edit me-2"></i>Switch to Author
                     </button>
                 </form>
-
-                <!-- Option 2: Direct Link (GET method) - Backup -->
-                <a href="{{ route('become.author') }}" class="btn btn-success">
-                    <i class="fas fa-arrow-right me-2"></i>Become Author (Direct)
-                </a>
+                
+                <p class="mt-2 text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    You will be redirected to dashboard after switching.
+                </p>
             </div>
         </div>
     </div>

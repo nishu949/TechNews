@@ -28,10 +28,10 @@ WORKDIR /app
 COPY . /app
 
 # Create storage and bootstrap/cache directories
-RUN mkdir -p /app/storage /app/bootstrap/cache
+RUN mkdir -p /app/storage /app/bootstrap/cache /app/public/storage
 
 # Set permissions
-RUN chmod -R 777 /app/storage /app/bootstrap/cache
+RUN chmod -R 777 /app/storage /app/bootstrap/cache /app/public/storage
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
@@ -42,8 +42,11 @@ RUN composer run-script post-autoload-dump --no-interaction
 # Install Node dependencies and build assets
 RUN npm install && npm run build
 
+# ✅ CREATE STORAGE LINK
+RUN php artisan storage:link || true
+
 # Set final permissions
-RUN chmod -R 777 /app/storage /app/bootstrap/cache
+RUN chmod -R 777 /app/storage /app/bootstrap/cache /app/public/storage
 
 # Expose port 10000
 EXPOSE 10000

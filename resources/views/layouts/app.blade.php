@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZAAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAZtJREFUWEftV7FtwzAQfUKn8ASZIU2WIjNkhiyjWbREZ8gIWcJkKZIpMkWW8hK50hNEQJpKVBNpE1KASMEHwOCI9+/x3h14IMQJ1zUw5xwOhwNms1kUqazY399/LKuu60eYdzgcUFUV3u/3Cdc85UFABFEUBerrNMPt0+kE165dKwVZliUElBBhjCGOYxAEId8jL6b84Vg+iqNE9f39fVFVVVo1l2XZcQghMGAM7Kqq8P3hENiGMIYC66C+P9qsfzAZsyynlKK6rvHSB9jHtw/9xsMRDAkBFZAYqZSKBOWYYP89gMFgAGmawvX1deL3kgDHMeA4hiAIkqB7WcNx1P0gCGA+n0PbtoCxj+HfL+lxgAvC4xxCCNzf38PxeORh7Fh/hG1l6cQQs6kIAY/HoPOTmT5jH1YBRigIAlgsFlAUBXcXGw5wnifz0WgE0+n0d0f7IeC4Lvs+nw/CMPxL9F8lQQg6p+M4mM1mAghnOlg63RZJE/zkjF5vj49ayg07P5xrwjB8Nw1sLIGV+7iI49h28dF9S0RbzP+FjC+Z2j5Z82b7MAAAAABJRU5ErkJggg==">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
