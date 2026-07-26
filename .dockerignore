@@ -1,0 +1,11 @@
+/vendor
+/node_modules
+/storage
+/bootstrap/cache
+.env
+.git
+.gitignore
+.DS_Store
+*.log
+.idea
+.vscode

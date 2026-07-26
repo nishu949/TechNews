@@ -43,12 +43,3 @@ EXPOSE 10000
 
 # Start PHP-FPM
 CMD php artisan serve --host=0.0.0.0 --port=10000
-/vendor
-/node_modules
-/storage
-/bootstrap/cache
-.env
-.git
-.gitignore
-.DS_Store
-*.log
