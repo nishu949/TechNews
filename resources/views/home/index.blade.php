@@ -8,9 +8,9 @@
     <div class="col-lg-8">
         <!-- Hero Section -->
         <div class="hero-section mb-5 pb-4">
-            <h1 class="display-4 fw-bold mb-3" style="letter-spacing: -0.03em;">
-                Developer News &amp; Tutorials
-            </h1>
+          <h1 class="display-4 fw-bold mb-3 text-dark" style="letter-spacing: -0.03em;">
+    Developer News &amp; Tutorials
+</h1>
             <p class="lead text-muted" style="font-size: 1.25rem;">
                 Explore Laravel, PHP, JavaScript, React, MySQL and modern web development.
             </p>
