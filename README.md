@@ -324,6 +324,210 @@ SESSION_LIFETIME=120
 CACHE_STORE=database
 QUEUE_CONNECTION=database
 
+### 🚀 TechNews - Complete Deployment Guide
+# 📋 Deployment Overview
+TechNews is deployed on Render using their free tier. The application uses a Docker container with PostgreSQL database.
+# 🌐 Live Application
+https://technews-ycl9.onrender.com
+
+# 🏗️ Deployment Architecture
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        RENDER DEPLOYMENT ARCHITECTURE                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌─────────────────────────────────────────────────────────────────┐      │
+│   │                    RENDER PLATFORM                              │      │
+│   │                                                                 │      │
+│   │  ┌─────────────────────┐      ┌─────────────────────────────┐ │      │
+│   │  │   WEB SERVICE       │      │      DATABASE               │ │      │
+│   │  │   (technews)        │      │   (technews-db)             │ │      │
+│   │  │                     │◄─────│                             │ │      │
+│   │  │   Docker Container  │      │   PostgreSQL 18             │ │      │
+│   │  │   PHP 8.3           │      │   Free Plan (1GB)           │ │      │
+│   │  │   Laravel 13.20.0   │      │   Expires: Aug 25, 2026    │ │      │
+│   │  │   Nginx (internal)  │      │                             │ │      │
+│   │  └─────────────────────┘      └─────────────────────────────┘ │      │
+│   │          │                                                     │      │
+│   │          ▼                                                     │      │
+│   │  ┌─────────────────────────────────────────────────────────┐  │      │
+│   │  │              Environment Variables                      │  │      │
+│   │  ├─────────────────────────────────────────────────────────┤  │      │
+│   │  │  APP_URL=https://technews-ycl9.onrender.com            │  │      │
+│   │  │  DB_CONNECTION=pgsql                                   │  │      │
+│   │  │  DATABASE_URL=postgresql://...                         │  │      │
+│   │  │  PGSSLMODE=require                                     │  │      │
+│   │  └─────────────────────────────────────────────────────────┘  │      │
+│   └─────────────────────────────────────────────────────────────────┘      │
+│                                                                             │
+│   ┌─────────────────────────────────────────────────────────────────┐      │
+│   │                     GITHUB INTEGRATION                         │      │
+│   │   Repository: nishu949/TechNews                                │      │
+│   │   Branch: main                                                 │      │
+│   │   Auto-deploy on push ✅                                       │      │
+│   └─────────────────────────────────────────────────────────────────┘      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+### 📁 Deployment Files
+ # 1. render.yaml
+ ```
+ services:
+  - type: web
+    name: technews
+    runtime: docker
+    plan: free
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      npm install
+      npm run build
+      php artisan storage:link
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+    startCommand: php artisan serve --host=0.0.0.0 --port=10000
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://technews-ycl9.onrender.com
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: technews-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log
+      - key: FILESYSTEM_DISK
+        value: local
+
+databases:
+  - name: technews-db
+    plan: free
+```
+
+# 2. Dockerfile
+```
+FROM php:8.3-cli
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nodejs \
+    npm \
+    libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd pdo_pgsql pgsql
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /app
+
+# Copy all files
+COPY . /app
+
+# Create storage and bootstrap/cache directories
+RUN mkdir -p /app/storage /app/bootstrap/cache /app/public/storage
+
+# Set permissions
+RUN chmod -R 777 /app/storage /app/bootstrap/cache /app/public/storage
+
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Run post-install scripts
+RUN composer run-script post-autoload-dump --no-interaction
+
+# Install Node dependencies and build assets
+RUN npm install && npm run build
+
+# Create storage link
+RUN php artisan storage:link || true
+
+# Set final permissions
+RUN chmod -R 777 /app/storage /app/bootstrap/cache /app/public/storage
+
+# Expose port 10000
+EXPOSE 10000
+
+# Start command
+CMD php artisan serve --host=0.0.0.0 --port=10000
+```
+# 🔧 Environment Variables
+```
+Variable	Value	Description
+APP_NAME	TechNews	Application name
+APP_ENV	production	Environment mode
+APP_DEBUG	false	Debug mode (disabled)
+APP_URL	https://technews-ycl9.onrender.com	Application URL
+APP_KEY	(auto-generated)	Encryption key
+DB_CONNECTION	pgsql	Database driver
+DATABASE_URL	postgresql://...	PostgreSQL connection string
+PGSSLMODE	require	SSL mode for database
+SESSION_DRIVER	file	Session storage
+CACHE_DRIVER	file	Cache storage
+QUEUE_CONNECTION	sync	Queue driver
+MAIL_MAILER	log	Email driver (log mode)
+FILESYSTEM_DISK	local	Storage driver
+```
+# 🚀 Deployment Commands
+# 1. Push code to GitHub
+git add .
+git commit -m "Deploy to Render"
+git push origin main
+
+# 2. Render auto-deploys on push
+# 3. Check deployment status in Render dashboard
+
+# In Render Dashboard → Web Service → Manual Deploy → Run one-off job
+php artisan migrate --force
+
+# View Logs 
+# In Render Dashboard:
+# 1. Click on technews web service
+# 2. Click "Logs" tab
+# 3. View real-time logs
+
+ # 📁 Project Repository
+ GitHub: https://github.com/nishu949/TechNews
+Branch: main
+
+# 🧪 Testing the Deployment
+# Visit the application
+https://technews-ycl9.onrender.com
+
+# Check debug information
+https://technews-ycl9.onrender.com/debug
+
+# Check database connection
+https://technews-ycl9.onrender.com/setup
+
+# Check storage link
+https://technews-ycl9.onrender.com/storage-link
+
+
 
 ## Project Structure 
 ```
@@ -474,7 +678,16 @@ technews/
 ├── package.json
 └── README.md
 ```
+
+
 Nishad Shaikh 
 
 GitHub:nishu949
 LinkedIn:Nishad Shaikh
+
+# 📞 Support
+Live Application: https://technews-ycl9.onrender.com
+
+GitHub Repository: https://github.com/nishu949/TechNews
+
+Render Dashboard: https://dashboard.render.com
